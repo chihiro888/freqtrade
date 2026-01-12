@@ -26,11 +26,11 @@ def _get_line_header(
     return [
         *([first_column] if isinstance(first_column, str) else first_column),
         direction,
-        "Avg Profit %",
-        f"Tot Profit {stake_currency}",
-        "Tot Profit %",
-        "Avg Duration",
-        "Win  Draw  Loss  Win%",
+        "평균 수익률 %",
+        f"총 수익 {stake_currency}",
+        "총 수익률 %",
+        "평균 보유시간",
+        "승  무  패  승률%",
     ]
 
 
@@ -54,7 +54,7 @@ def text_table_bt_results(
     :param title: Title of the table
     """
 
-    headers = _get_line_header("Pair", stake_currency, "Trades")
+    headers = _get_line_header("코인", stake_currency, "거래수")
     output = [
         [
             t["key"],
@@ -85,16 +85,16 @@ def text_table_tags(
     fallback: str = ""
     is_list = False
     if tag_type == "enter_tag":
-        title = "Enter Tag"
-        headers = _get_line_header(title, stake_currency, "Entries")
+        title = "진입 태그"
+        headers = _get_line_header(title, stake_currency, "진입")
     elif tag_type == "exit_tag":
-        title = "Exit Reason"
-        headers = _get_line_header(title, stake_currency, "Exits")
+        title = "종료 사유"
+        headers = _get_line_header(title, stake_currency, "종료")
         fallback = "exit_reason"
     else:
         # Mix tag
-        title = "Mixed Tag"
-        headers = _get_line_header(["Enter Tag", "Exit Reason"], stake_currency, "Trades")
+        title = "복합 태그"
+        headers = _get_line_header(["진입 태그", "종료 사유"], stake_currency, "거래수")
         floatfmt.insert(0, "s")
         is_list = True
 
@@ -121,7 +121,7 @@ def text_table_tags(
         for t in tag_results
     ]
     # Ignore type as floatfmt does allow tuples but mypy does not know that
-    print_rich_table(output, headers, summary=f"{title.upper()} STATS")
+    print_rich_table(output, headers, summary=f"{title.upper()} 통계")
 
 
 def text_table_periodic_breakdown(
@@ -134,10 +134,10 @@ def text_table_periodic_breakdown(
     """
     headers = [
         period.capitalize(),
-        "Trades",
-        f"Tot Profit {stake_currency}",
-        "Profit Factor",
-        "Win  Draw  Loss  Win%",
+        "거래수",
+        f"총 수익 {stake_currency}",
+        "수익 팩터",
+        "승  무  패  승률%",
     ]
     output = [
         [
@@ -149,7 +149,7 @@ def text_table_periodic_breakdown(
         ]
         for d in days_breakdown_stats
     ]
-    print_rich_table(output, headers, summary=f"{period.upper()} BREAKDOWN")
+    print_rich_table(output, headers, summary=f"{period.upper()}별 상세내역")
 
 
 def text_table_strategy(strategy_results, stake_currency: str, title: str):
@@ -158,10 +158,10 @@ def text_table_strategy(strategy_results, stake_currency: str, title: str):
     :param strategy_results: Dict of <Strategyname: DataFrame> containing results for all strategies
     :param stake_currency: stake-currency - used to correctly name headers
     """
-    headers = _get_line_header("Strategy", stake_currency, "Trades")
+    headers = _get_line_header("전략", stake_currency, "거래수")
     # _get_line_header() is also used for per-pair summary. Per-pair drawdown is mostly useless
     # therefore we slip this column in only for strategy summary here.
-    headers.append("Drawdown")
+    headers.append("최대 낙폭")
 
     # Align drawdown string on the center two space separator.
     if "max_drawdown_account" in strategy_results[0]:
@@ -203,17 +203,17 @@ def text_table_add_metrics(strat_results: dict) -> None:
             [
                 ("", ""),  # Empty line to improve readability
                 (
-                    "Long / Short trades",
+                    "롱 / 숏 거래수",
                     f"{strat_results.get('trade_count_long', 'total_trades')} / "
                     f"{strat_results.get('trade_count_short', 0)}",
                 ),
                 (
-                    "Long / Short profit %",
+                    "롱 / 숏 수익률 %",
                     f"{strat_results['profit_total_long']:.2%} / "
                     f"{strat_results['profit_total_short']:.2%}",
                 ),
                 (
-                    f"Long / Short profit {stake}",
+                    f"롱 / 숏 수익금 {stake}",
                     f"{strat_results['profit_total_long_abs']:.{decimals_per_coin(stake)}f} / "
                     f"{strat_results['profit_total_short_abs']:.{decimals_per_coin(stake)}f}",
                 ),
@@ -226,7 +226,7 @@ def text_table_add_metrics(strat_results: dict) -> None:
         if "max_relative_drawdown" in strat_results:
             # Compatibility to show old hyperopt results
             drawdown_metrics.append(
-                ("Max % of account underwater", f"{strat_results['max_relative_drawdown']:.2%}")
+                ("최대 자산 하락폭(Underwater) %", f"{strat_results['max_relative_drawdown']:.2%}")
             )
         drawdown_account = (
             strat_results["max_drawdown_account"]
@@ -236,34 +236,34 @@ def text_table_add_metrics(strat_results: dict) -> None:
         drawdown_metrics.extend(
             [
                 (
-                    "Absolute drawdown",
+                    "절대 낙폭(Drawdown)",
                     f"{fmt_coin(strat_results['max_drawdown_abs'], stake)} "
                     f"({drawdown_account:.2%})",
                 ),
                 (
-                    "Drawdown duration",
+                    "낙폭 지속 기간",
                     strat_results["drawdown_duration"]
                     if "drawdown_duration" in strat_results
                     else "N/A",
                 ),
                 (
-                    "Profit at drawdown start",
+                    "낙폭 시작 시점 수익금",
                     fmt_coin(strat_results["max_drawdown_high"], stake),
                 ),
                 (
-                    "Profit at drawdown end",
+                    "낙폭 종료 시점 수익금",
                     fmt_coin(strat_results["max_drawdown_low"], stake),
                 ),
-                ("Drawdown start", strat_results["drawdown_start"]),
-                ("Drawdown end", strat_results["drawdown_end"]),
+                ("낙폭 시작일", strat_results["drawdown_start"]),
+                ("낙폭 종료일", strat_results["drawdown_end"]),
             ]
         )
 
         entry_adjustment_metrics = (
             [
-                ("Canceled Trade Entries", strat_results.get("canceled_trade_entries", "N/A")),
-                ("Canceled Entry Orders", strat_results.get("canceled_entry_orders", "N/A")),
-                ("Replaced Entry Orders", strat_results.get("replaced_entry_orders", "N/A")),
+                ("취소된 진입 거래", strat_results.get("canceled_trade_entries", "N/A")),
+                ("취소된 진입 주문", strat_results.get("canceled_entry_orders", "N/A")),
+                ("교체된 진입 주문", strat_results.get("replaced_entry_orders", "N/A")),
             ]
             if strat_results.get("canceled_entry_orders", 0) > 0
             else []
@@ -273,7 +273,7 @@ def text_table_add_metrics(strat_results: dict) -> None:
             (
                 [
                     (
-                        "Trading Mode",
+                        "거래 모드",
                         (
                             ""
                             if not strat_results.get("margin_mode")
@@ -292,35 +292,35 @@ def text_table_add_metrics(strat_results: dict) -> None:
         # command stores these results and newer version of freqtrade must be able to handle old
         # results with missing new fields.
         metrics = [
-            ("Backtesting from", strat_results["backtest_start"]),
-            ("Backtesting to", strat_results["backtest_end"]),
+            ("백테스팅 시작일", strat_results["backtest_start"]),
+            ("백테스팅 종료일", strat_results["backtest_end"]),
             *trading_mode,
-            ("Max open trades", strat_results["max_open_trades"]),
+            ("최대 동시 거래수", strat_results["max_open_trades"]),
             ("", ""),  # Empty line to improve readability
             (
-                "Total/Daily Avg Trades",
+                "총 거래수 / 일평균",
                 f"{strat_results['total_trades']} / {strat_results['trades_per_day']}",
             ),
             (
-                "Starting balance",
+                "시작 자산",
                 fmt_coin(strat_results["starting_balance"], stake),
             ),
             (
-                "Final balance",
+                "종료 자산",
                 fmt_coin(strat_results["final_balance"], stake),
             ),
             (
-                "Absolute profit ",
+                "순수익금 ",
                 fmt_coin(strat_results["profit_total_abs"], stake),
             ),
-            ("Total profit %", f"{strat_results['profit_total']:.2%}"),
-            ("CAGR %", f"{strat_results['cagr']:.2%}" if "cagr" in strat_results else "N/A"),
+            ("총 수익률 %", f"{strat_results['profit_total']:.2%}"),
+            ("연평균 성장률(CAGR) %", f"{strat_results['cagr']:.2%}" if "cagr" in strat_results else "N/A"),
             ("Sortino", f"{strat_results['sortino']:.2f}" if "sortino" in strat_results else "N/A"),
             ("Sharpe", f"{strat_results['sharpe']:.2f}" if "sharpe" in strat_results else "N/A"),
             ("Calmar", f"{strat_results['calmar']:.2f}" if "calmar" in strat_results else "N/A"),
             ("SQN", f"{strat_results['sqn']:.2f}" if "sqn" in strat_results else "N/A"),
             (
-                "Profit factor",
+                "수익 팩터",
                 (
                     f"{strat_results['profit_factor']:.2f}"
                     if "profit_factor" in strat_results
@@ -328,7 +328,7 @@ def text_table_add_metrics(strat_results: dict) -> None:
                 ),
             ),
             (
-                "Expectancy (Ratio)",
+                "기대 수익값 (비율)",
                 (
                     f"{strat_results['expectancy']:.2f} ({strat_results['expectancy_ratio']:.2f})"
                     if "expectancy_ratio" in strat_results
@@ -336,61 +336,61 @@ def text_table_add_metrics(strat_results: dict) -> None:
                 ),
             ),
             (
-                "Avg. daily profit",
+                "일평균 수익금",
                 fmt_coin(
                     (strat_results["profit_total_abs"] / strat_results["backtest_days"]),
                     stake,
                 ),
             ),
             (
-                "Avg. stake amount",
+                "평균 진입 금액",
                 fmt_coin(strat_results["avg_stake_amount"], stake),
             ),
             (
-                "Total trade volume",
+                "총 거래 대금",
                 fmt_coin(strat_results["total_volume"], stake),
             ),
             *short_metrics,
             ("", ""),  # Empty line to improve readability
             (
-                "Best Pair",
+                "최고 수익 코인",
                 f"{strat_results['best_pair']['key']} "
                 f"{strat_results['best_pair']['profit_total']:.2%}",
             ),
             (
-                "Worst Pair",
+                "최저 수익 코인",
                 f"{strat_results['worst_pair']['key']} "
                 f"{strat_results['worst_pair']['profit_total']:.2%}",
             ),
-            ("Best trade", f"{best_trade['pair']} {best_trade['profit_ratio']:.2%}"),
-            ("Worst trade", f"{worst_trade['pair']} {worst_trade['profit_ratio']:.2%}"),
+            ("최고 수익 거래", f"{best_trade['pair']} {best_trade['profit_ratio']:.2%}"),
+            ("최악(최저) 수익 거래", f"{worst_trade['pair']} {worst_trade['profit_ratio']:.2%}"),
             (
-                "Best day",
+                "최고 수익의 날",
                 fmt_coin(strat_results["backtest_best_day_abs"], stake),
             ),
             (
-                "Worst day",
+                "최저 수익의 날",
                 fmt_coin(strat_results["backtest_worst_day_abs"], stake),
             ),
             (
-                "Days win/draw/lose",
+                "일별 승/무/패",
                 f"{strat_results['winning_days']} / "
                 f"{strat_results['draw_days']} / {strat_results['losing_days']}",
             ),
             (
-                "Min/Max/Avg. Duration Winners",
+                "승리 거래 보유시간 (최소/최대/평균)",
                 f"{strat_results.get('winner_holding_min', 'N/A')} / "
                 f"{strat_results.get('winner_holding_max', 'N/A')} / "
                 f"{strat_results.get('winner_holding_avg', 'N/A')}",
             ),
             (
-                "Min/Max/Avg. Duration Losers",
+                "손실 거래 보유시간 (최소/최대/평균)",
                 f"{strat_results.get('loser_holding_min', 'N/A')} / "
                 f"{strat_results.get('loser_holding_max', 'N/A')} / "
                 f"{strat_results.get('loser_holding_avg', 'N/A')}",
             ),
             (
-                "Max Consecutive Wins / Loss",
+                "최대 연속 승리 / 패배",
                 (
                     (
                         f"{strat_results['max_consecutive_wins']} / "
@@ -400,20 +400,20 @@ def text_table_add_metrics(strat_results: dict) -> None:
                     else "N/A"
                 ),
             ),
-            ("Rejected Entry signals", strat_results.get("rejected_signals", "N/A")),
+            ("거부된 진입 신호", strat_results.get("rejected_signals", "N/A")),
             (
-                "Entry/Exit Timeouts",
+                "진입/종료 타임아웃",
                 f"{strat_results.get('timedout_entry_orders', 'N/A')} / "
                 f"{strat_results.get('timedout_exit_orders', 'N/A')}",
             ),
             *entry_adjustment_metrics,
             ("", ""),  # Empty line to improve readability
-            ("Min balance", fmt_coin(strat_results["csum_min"], stake)),
-            ("Max balance", fmt_coin(strat_results["csum_max"], stake)),
+            ("최소 자산", fmt_coin(strat_results["csum_min"], stake)),
+            ("최대 자산", fmt_coin(strat_results["csum_max"], stake)),
             *drawdown_metrics,
-            ("Market change", f"{strat_results['market_change']:.2%}"),
+            ("시장 변화율", f"{strat_results['market_change']:.2%}"),
         ]
-        print_rich_table(metrics, ["Metric", "Value"], summary="SUMMARY METRICS", justify="left")
+        print_rich_table(metrics, ["지표", "값"], summary="요약 지표", justify="left")
 
     else:
         start_balance = fmt_coin(strat_results["starting_balance"], stake)
@@ -424,9 +424,9 @@ def text_table_add_metrics(strat_results: dict) -> None:
         )
 
         message = (
-            "No trades made. "
-            f"Your starting balance was {start_balance}, "
-            f"and your stake was {stake_amount}."
+            "거래 내역이 없습니다. "
+            f"시작 자산은 {start_balance}, "
+            f"진입 금액은 {stake_amount} 였습니다."
         )
         print(message)
 
@@ -452,12 +452,12 @@ def show_backtest_result(
     Print results for one strategy
     """
     # Print results
-    print(f"Result for strategy {strategy}")
+    print(f"전략 결과: {strategy}")
     text_table_bt_results(
-        results["results_per_pair"], stake_currency=stake_currency, title="BACKTESTING REPORT"
+        results["results_per_pair"], stake_currency=stake_currency, title="백테스팅 결과"
     )
     text_table_bt_results(
-        results["left_open_trades"], stake_currency=stake_currency, title="LEFT OPEN TRADES REPORT"
+        results["left_open_trades"], stake_currency=stake_currency, title="미체결(보유중) 거래 결과"
     )
 
     _show_tag_subresults(results, stake_currency)
@@ -490,11 +490,11 @@ def show_backtest_results(config: Config, backtest_stats: BacktestResultType):
         # Print Strategy summary table
 
         print(
-            f"Backtested {results['backtest_start']} -> {results['backtest_end']} |"
-            f" Max open trades : {results['max_open_trades']}"
+            f"백테스팅 기간: {results['backtest_start']} -> {results['backtest_end']} |"
+            f" 최대 동시 거래수 : {results['max_open_trades']}"
         )
         text_table_strategy(
-            backtest_stats["strategy_comparison"], stake_currency, "STRATEGY SUMMARY"
+            backtest_stats["strategy_comparison"], stake_currency, "전략 요약"
         )
 
 

@@ -119,7 +119,7 @@ async def _download_archive_ohlcv(
     # the current day being processing, starting at 1.
     current_day = 0
 
-    connector = aiohttp.TCPConnector(limit=100)
+    connector = aiohttp.TCPConnector(limit=100, ssl=False)
     async with aiohttp.ClientSession(connector=connector, trust_env=True) as session:
         # the HTTP connections has been throttled by TCPConnector
         for dates in chunks(list(date_range(start, end)), 1000):
@@ -452,7 +452,7 @@ async def _download_archive_trades(
     # the current day being processing, starting at 1.
     current_day = 0
 
-    connector = aiohttp.TCPConnector(limit=100)
+    connector = aiohttp.TCPConnector(limit=100, ssl=False)
     async with aiohttp.ClientSession(connector=connector, trust_env=True) as session:
         # the HTTP connections has been throttled by TCPConnector
         for dates in chunks(list(date_range(start, end)), 30):

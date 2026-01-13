@@ -1,8 +1,8 @@
 {
     "$schema": "https://schema.freqtrade.io/schema.json",
     "max_open_trades": 3,
-    "stake_currency": "BTC",
-    "stake_amount": 0.05,
+    "stake_currency": "USDT",
+    "stake_amount": 3,
     "tradable_balance_ratio": 0.99,
     "fiat_display_currency": "USD",
     "amount_reserve_percent": 0.05,
@@ -12,7 +12,7 @@
     "dry_run": true,
     "dry_run_wallet": 1000,
     "cancel_open_orders_on_exit": false,
-    "timeframe": "5m",
+    "timeframe": "1m",
     "trailing_stop": false,
     "trailing_stop_positive": 0.005,
     "trailing_stop_positive_offset": 0.0051,
@@ -22,9 +22,9 @@
     "exit_profit_offset": 0.0,
     "ignore_roi_if_entry_signal": false,
     "ignore_buying_expired_candle_after": 300,
-    "trading_mode": "spot",
-    "margin_mode": "",
-    "stoploss": -0.10,
+    "trading_mode": "futures",
+    "margin_mode": "cross",
+    "stoploss": -1.0,
     "unfilledtimeout": {
         "entry": 10,
         "exit": 10,
@@ -66,41 +66,6 @@
     "pairlists": [
         {
             "method": "StaticPairList"
-        },
-        {
-            "method": "DelistFilter",
-            "max_days_from_now": 0
-        },
-        {
-            "method": "FullTradesFilter"
-        },
-        {
-            "method": "VolumePairList",
-            "number_assets": 20,
-            "sort_key": "quoteVolume",
-            "refresh_period": 1800
-        },
-        {
-            "method": "AgeFilter",
-            "min_days_listed": 10
-        },
-        {
-            "method": "PrecisionFilter"
-        },
-        {
-            "method": "PriceFilter",
-            "low_price_ratio": 0.01,
-            "min_price": 0.00000010
-        },
-        {
-            "method": "SpreadFilter",
-            "max_spread_ratio": 0.005
-        },
-        {
-            "method": "RangeStabilityFilter",
-            "lookback_days": 10,
-            "min_rate_of_change": 0.01,
-            "refresh_period": 1440
         }
     ],
     "exchange": {
@@ -112,25 +77,13 @@
         "ccxt_config": {},
         "ccxt_async_config": {},
         "pair_whitelist": [
-            "ALGO/BTC",
-            "ATOM/BTC",
-            "BAT/BTC",
-            "BCH/BTC",
-            "BRD/BTC",
-            "EOS/BTC",
-            "ETH/BTC",
-            "IOTA/BTC",
-            "LINK/BTC",
-            "LTC/BTC",
-            "NEO/BTC",
-            "NXS/BTC",
-            "XMR/BTC",
-            "XRP/BTC",
-            "XTZ/BTC"
+            "BTC/USDT:USDT",
+            "ETH/USDT:USDT",
+            "XRP/USDT:USDT",
+            "SOL/USDT:USDT",
+            "DOGE/USDT:USDT"
         ],
-        "pair_blacklist": [
-            "DOGE/BTC"
-        ],
+        "pair_blacklist": [],
         "outdated_offset": 5,
         "markets_refresh_interval": 60
     },
@@ -201,7 +154,7 @@
         "heartbeat_interval": 60
     },
     "disable_dataframe_checks": false,
-    "strategy": "SampleStrategy",
+    "strategy": "BBMarginStrategy",
     "strategy_path": "user_data/strategies/",
     "recursive_strategy_search": false,
     "add_config_files": [],

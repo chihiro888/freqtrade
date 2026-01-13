@@ -122,3 +122,5 @@ user_data/data/binance/futures/XRP_USDT_USDT-1h-funding_rate.feather
 user_data/data/binance/futures/XRP_USDT_USDT-1h-mark.feather
 user_data/data/binance/futures/XRP_USDT_USDT-1m-futures.feather
 # !user_data/strategies/MyFuturesStrategy.py
+
+user_data/backtest_results

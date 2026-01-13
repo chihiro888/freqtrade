@@ -4,7 +4,7 @@ config*.json
 *.sqlite-shm
 *.sqlite-wal
 logfile.txt
-user_data/*
+# user_data/*
 !user_data/strategy/sample_strategy.py
 !user_data/notebooks
 !user_data/models
@@ -117,4 +117,8 @@ target/
 
 docker-compose-*.yml
 
-!user_data/config.json
+# !user_data/config.json
+user_data/data/binance/futures/XRP_USDT_USDT-1h-funding_rate.feather
+user_data/data/binance/futures/XRP_USDT_USDT-1h-mark.feather
+user_data/data/binance/futures/XRP_USDT_USDT-1m-futures.feather
+# !user_data/strategies/MyFuturesStrategy.py
